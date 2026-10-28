@@ -1,21 +1,19 @@
-const connection= {
-    host: database.host,
-    port: database.port,
-    database: database.database,
-    username: "root",
-    password: database.password
-};
+const { getDatabaseConfig } = require("./config");
 
-function connect() {
-    console.log(
-        `conectando ao banco $(connection.database) como $(connection.username)...`
-    );
+function connect(config = getDatabaseConfig()) {
+    const connection = {
+        host: config.host,
+        port: config.port,
+        database: config.database,
+        username: config.username,
+        password: config.password
+    };
+
+    console.log("conectando ao banco de dados...");
 
     return connection;
-
 }
 
 module.exports = {
     connect
 };
-
