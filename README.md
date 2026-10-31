@@ -360,3 +360,41 @@ Ao final da atividade, o repositório deverá representar uma versão mais segur
 - consideração sobre rotação e revogação de credenciais.
 
 O objetivo final é compreender que **gerenciar segredos não significa apenas esconder uma senha**, mas controlar todo o ciclo de vida das informações sensíveis dentro do ambiente DevOps.
+
+Relatório de Segurança e Correções
+Abaixo estão registrados todos os problemas de segurança identificados no código inicial, as devidas correções aplicadas e a justificativa técnica para cada uma delas.
+
+1. Hardcoded Credentials no Código-fonte
+Problema Encontrado: Credenciais de acesso ao banco de dados e tokens de API estavam declarados diretamente no código JS (ex: arquivos de configuração e conexão).
+
+Correção Realizada: As credenciais foram removidas do código e centralizadas no arquivo .env. Utilizou-se a biblioteca dotenv para injetá-las em process.env.
+
+Justificativa: Armazenar segredos diretamente no código-fonte expõe dados sensíveis no controle de versão, aumentando drasticamente o risco de vazamento.
+
+2. Exposição do Arquivo .env no Git
+Problema Encontrado: O arquivo .env contendo credenciais reais não estava listado no .gitignore, correndo o risco de ser commitado no repositório.
+
+Correção Realizada: Adicionou-se a regra .env ao arquivo .gitignore e criou-se um modelo .env.example sem valores reais.
+
+Justificativa: O arquivo .env deve permanecer exclusivamente no ambiente local ou servidor de hospedagem. O .env.example permite que outros desenvolvedores conheçam a estrutura das variáveis necessárias sem expor senhas.
+
+3. Erro de Sintaxe em Interpolação de String (Template String)
+Problema Encontrado: Uso de parênteses $(variavel) em vez de chaves ${variavel} nos logs da função de conexão.
+
+Correção Realizada: Ajustada a sintaxe para ${connection.database} e ${connection.username}.
+
+Justificativa: O uso de parênteses fazia o JavaScript imprimir a string literal $(...) em vez de interpolar os dados reais da conexão.
+
+4. Uso do Usuário Root e Senhas Hardcoded no Docker Compose
+Problema Encontrado: O arquivo docker-compose.yml possuía senhas fixas e duplicidade nas variáveis de ambiente (MYSQL_ROOT_PASSWORD declarada duas vezes).
+
+Correção Realizada: O arquivo docker-compose.yml foi refatorado para consumir diretamente as variáveis de ambiente com a sintaxe ${NOME_DA_VARIAVEL}, eliminando as duplicidades.
+
+Justificativa: Centraliza o gerenciamento de credenciais em uma única fonte da verdade (o .env) e impede a exposição de segredos nas configurações do Docker.
+
+5. Fallback Seguro para Usuário do Banco
+Problema Encontrado: Fixação do usuário de banco de dados como "root" diretamente no objeto de conexão.
+
+Correção Realizada: Ajustado para utilizar database.username || "root" (ou o equivalente via process.env.DB_USER).
+
+Justificativa: Evita o uso forçado da conta de superusuário (root), incentivando a utilização de usuários com privilégios limitados (DB_USER) no ambiente de execução.
